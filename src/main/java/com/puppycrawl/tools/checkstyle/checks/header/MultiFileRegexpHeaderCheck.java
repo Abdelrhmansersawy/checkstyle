@@ -34,8 +34,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.checkerframework.checker.regex.qual.Regex;
-
 import com.puppycrawl.tools.checkstyle.FileStatefulCheck;
 import com.puppycrawl.tools.checkstyle.PropertyType;
 import com.puppycrawl.tools.checkstyle.XdocsPropertyType;
@@ -123,7 +121,6 @@ public class MultiFileRegexpHeaderCheck
      * Specify a comma-separated list of files containing the required headers.
      */
     @XdocsPropertyType(PropertyType.STRING)
-    @SuppressWarnings("unused")
     private String headerFiles;
 
     /**
@@ -236,9 +233,9 @@ public class MultiFileRegexpHeaderCheck
         // Only proceed to find mismatch if not all patterns match or are empty
         int result = VALID_LINE_HEADER_CHECKER;
         if (!allEmpty && lineMatches.cardinality() != headerPatterns.size()) {
-            for (int i = 0; i < fileSize && i < headerPatterns.size(); i++) {
-                if (!headerPatterns.get(i).matcher(fileText.get(i)).find()) {
-                    result = i;
+            for (int index = 0; index < fileSize && index < headerPatterns.size(); index++) {
+                if (!headerPatterns.get(index).matcher(fileText.get(index)).find()) {
+                    result = index;
                     break;
                 }
             }
@@ -378,7 +375,7 @@ public class MultiFileRegexpHeaderCheck
          * @param input the string to be treated as a regex pattern
          * @return the input string, annotated as a valid regex
          */
-        private static @Regex String validateRegex(String input) {
+        private static String validateRegex(String input) {
             // This method should ensure input is a valid regex before returning
             return input;
         }
