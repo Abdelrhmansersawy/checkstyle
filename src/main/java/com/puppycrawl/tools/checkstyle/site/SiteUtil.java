@@ -154,8 +154,8 @@ public final class SiteUtil {
     /**
      * Check and property name.
      */
-    private static final String MULTI_FILE_REGEXP_HEADER_CHECK_HEADER
-            = "MultiFileRegexpHeaderCheck.header";
+    private static final String MULTI_FILE_REGEXP_HEADER_CHECK_HEADER = 
+    "MultiFileRegexpHeaderCheck.header";
 
     /** Set of properties that are undocumented. Those are internal properties. */
     private static final Set<String> UNDOCUMENTED_PROPERTIES = Set.of(
