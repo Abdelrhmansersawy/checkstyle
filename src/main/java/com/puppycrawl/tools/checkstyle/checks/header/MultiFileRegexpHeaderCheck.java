@@ -34,8 +34,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.checkerframework.checker.regex.qual.Regex;
-
 import com.puppycrawl.tools.checkstyle.FileStatefulCheck;
 import com.puppycrawl.tools.checkstyle.PropertyType;
 import com.puppycrawl.tools.checkstyle.XdocsPropertyType;
@@ -123,7 +121,6 @@ public class MultiFileRegexpHeaderCheck
      * Specify a comma-separated list of files containing the required headers.
      */
     @XdocsPropertyType(PropertyType.STRING)
-    @SuppressWarnings("unused")
     private String headerFiles;
 
     /**
@@ -214,12 +211,13 @@ public class MultiFileRegexpHeaderCheck
     private static int findFirstMismatch(FileText fileText, HeaderFileMetadata headerFileMetadata) {
         final int fileSize = fileText.size();
         final List<Pattern> headerPatterns = headerFileMetadata.getHeaderPatterns();
+        final int headerPatternSize = headerPatterns.size();
 
-        final BitSet lineMatches = new BitSet(headerPatterns.size());
+        final BitSet lineMatches = new BitSet(headerPatternSize);
         boolean allEmpty = true;
 
         // First pass: check matches and build lineMatches
-        for (int index = 0; index < headerPatterns.size(); index++) {
+        for (int index = 0; index < headerPatternSize; index++) {
             final boolean matched;
             if (index < fileSize) {
                 matched = headerPatterns.get(index).matcher(fileText.get(index)).matches();
@@ -235,12 +233,21 @@ public class MultiFileRegexpHeaderCheck
 
         // Only proceed to find mismatch if not all patterns match or are empty
         int result = VALID_LINE_HEADER_CHECKER;
-        if (!allEmpty && lineMatches.cardinality() != headerPatterns.size()) {
-            for (int i = 0; i < fileSize && i < headerPatterns.size(); i++) {
-                if (!headerPatterns.get(i).matcher(fileText.get(i)).find()) {
-                    result = i;
-                    break;
-                }
+        if (allEmpty) {
+            return result;
+        }
+        // Second pass: find the first mismatch
+        // If all lines are empty, we don't need to check further
+        if (lineMatches.cardinality() == headerPatternSize) {
+            return result;
+        }
+        
+        // Check for mismatches in the header patterns
+        // against the file text
+        for (int index = 0; index < fileSize && index < headerPatternSize; index++) {
+            if (!headerPatterns.get(index).matcher(fileText.get(index)).find()) {
+                result = index;
+                break;
             }
         }
 
@@ -371,16 +378,23 @@ public class MultiFileRegexpHeaderCheck
         /**
          * Ensures that the given input string is a valid regular expression.
          *
-         * <p>This method is used to satisfy the Checker Framework's regex type system.
-         * It assumes that the input is a correctly formatted regex string. If additional
-         * validation is needed, this method can be modified to check the validity of the regex.
+         * <p>This method validates that the input is a correctly formatted regex string
+         * and will throw a PatternSyntaxException if it's invalid.
          *
          * @param input the string to be treated as a regex pattern
-         * @return the input string, annotated as a valid regex
+         * @return the validated regex pattern string
+         * @throws PatternSyntaxException if the pattern is not a valid regex
          */
-        private static @Regex String validateRegex(String input) {
-            // This method should ensure input is a valid regex before returning
-            return input;
+        private static String validateRegex(String input) {
+            // Attempt to compile the pattern to check its validity
+            // This will throw PatternSyntaxException if the pattern is invalid
+            try {
+                Pattern.compile(input);
+                return input;
+            }
+            catch (final PatternSyntaxException ex) {
+                throw new IllegalArgumentException("Invalid regex pattern: " + input, ex);
+            }
         }
     }
 }
