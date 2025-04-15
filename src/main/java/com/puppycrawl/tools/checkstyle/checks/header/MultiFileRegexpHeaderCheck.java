@@ -231,19 +231,19 @@ public class MultiFileRegexpHeaderCheck
             allEmpty = allEmpty && lineMatches.get(index);
         }
 
-        // Only proceed to find mismatch if not all patterns match or are empty
-        int result = VALID_LINE_HEADER_CHECKER;
-        if (allEmpty) {
-            return result;
-        }
-        // Second pass: find the first mismatch
         // If all lines are empty, we don't need to check further
-        if (lineMatches.cardinality() == headerPatternSize) {
-            return result;
+        if (allEmpty) {
+            return VALID_LINE_HEADER_CHECKER;
         }
         
-        // Check for mismatches in the header patterns
-        // against the file text
+        // If all patterns match, header is valid
+        final boolean allPatternsMatch = lineMatches.cardinality() == headerPatternSize;
+        if (allPatternsMatch) {
+            return VALID_LINE_HEADER_CHECKER;
+        }
+        
+        // Find the first mismatch in the header patterns against the file text
+        int result = VALID_LINE_HEADER_CHECKER;
         for (int index = 0; index < fileSize && index < headerPatternSize; index++) {
             if (!headerPatterns.get(index).matcher(fileText.get(index)).find()) {
                 result = index;
